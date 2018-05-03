@@ -29,14 +29,20 @@ public class GUIRunner {
   private static final int WIDTH = 480;
   private static final int HEIGHT = 480;
 
-  private static volatile ServiceStrategy serviceStrategy;
+  private static volatile GUIServiceStrategy serviceStrategy;
 
-  private static void createAndShowGui() {
-    JFrame frame = new JFrame();
-    frame.setSize(WIDTH, HEIGHT);
+  private static void addMessageTo(JEditorPane editorPane, String message) {
+    try {
+      Document document = editorPane.getDocument();
+      if (document.getLength() > 0) {
+        message = "\n" + message;
+      }
+      document.insertString(document.getLength(), message, null);
+    } catch (BadLocationException ignored) {
+    }
+  }
 
-    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
+  private static void fillFramePane(Container pane) {
     JButton beServerButton = new JButton("Become server");
     JButton beClientButton = new JButton("Connect to someone");
     JEditorPane editorPane = new JEditorPane();
@@ -64,7 +70,7 @@ public class GUIRunner {
       messageField.setEnabled(true);
       new Thread(() -> {
         MesAUServerRunner runner = new MesAUServerRunner(PORT_TO_RUN_ON);
-        serviceStrategy = new ServerServiceStrategy(runner);
+        serviceStrategy = new ServerGUIServiceStrategy(runner);
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {
           runner.run(message -> addMessageTo(editorPane, message.getContent()));
@@ -84,7 +90,7 @@ public class GUIRunner {
           Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
           StreamObserver<Message> responseStreamObserver =
             client.initiateChat(message -> addMessageTo(editorPane, message.getContent()));
-          serviceStrategy = new ClientServiceStrategy(responseStreamObserver);
+          serviceStrategy = new ClientGUIServiceStrategy(responseStreamObserver);
         } catch (Exception e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
         }
@@ -96,24 +102,22 @@ public class GUIRunner {
     panel.add(beServerButton);
     panel.add(beClientButton);
 
-    Container pane = frame.getContentPane();
     pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
     pane.add(panel);
     pane.add(messageField);
     pane.add(editorPane);
-
-    frame.setVisible(true);
   }
 
-  private static void addMessageTo(JEditorPane editorPane, String message) {
-    try {
-      Document document = editorPane.getDocument();
-      if (document.getLength() > 0) {
-        message = "\n" + message;
-      }
-      document.insertString(document.getLength(), message, null);
-    } catch (BadLocationException ignored) {
-    }
+  private static void createAndShowGui() {
+    JFrame frame = new JFrame();
+    frame.setSize(WIDTH, HEIGHT);
+
+    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+    Container pane = frame.getContentPane();
+    fillFramePane(pane);
+
+    frame.setVisible(true);
   }
 
   public static void main(String[] args) {
