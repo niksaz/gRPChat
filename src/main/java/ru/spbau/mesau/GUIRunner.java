@@ -28,9 +28,7 @@ public class GUIRunner {
   private static final int WIDTH = 480;
   private static final int HEIGHT = 480;
 
-  private static ServiceMode serviceMode;
-  private static MesAUServiceRunner runner;
-  private static StreamObserver<Message> responseStreamObserver;
+  private static volatile ServiceStrategy serviceStrategy;
 
   private static void createAndShowGui() {
     JFrame frame = new JFrame();
@@ -54,22 +52,18 @@ public class GUIRunner {
           messageField.setText("");
           addMessageTo(editorPane, "YOU: " + text);
           Message message = Message.newBuilder().setContent(text).build();
-          if (serviceMode == ServiceMode.SERVER) {
-            runner.sendMessage(message);
-          } if (serviceMode == ServiceMode.CLIENT) {
-            responseStreamObserver.onNext(message);
-          }
+          serviceStrategy.sendMessage(message);
         }
       }
     });
 
     beServerButton.addActionListener(action -> {
-      serviceMode = ServiceMode.SERVER;
       beServerButton.setEnabled(false);
       beClientButton.setVisible(false);
       messageField.setEnabled(true);
       new Thread(() -> {
-        runner = new MesAUServiceRunner(PORT_TO_RUN_ON);
+        MesAUServiceRunner runner = new MesAUServiceRunner(PORT_TO_RUN_ON);
+        serviceStrategy = new ServerServiceStrategy(runner);
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {
           runner.run(message -> addMessageTo(editorPane, message.getContent()));
@@ -80,7 +74,6 @@ public class GUIRunner {
     });
 
     beClientButton.addActionListener(action -> {
-      serviceMode = ServiceMode.CLIENT;
       beServerButton.setVisible(false);
       beClientButton.setEnabled(false);
       messageField.setEnabled(true);
@@ -88,8 +81,9 @@ public class GUIRunner {
         try {
           MesAUClient client = new MesAUClient("localhost", PORT_TO_RUN_ON);
           Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
-          responseStreamObserver =
+          StreamObserver<Message> responseStreamObserver =
             client.initiateChat(message -> addMessageTo(editorPane, message.getContent()));
+          serviceStrategy = new ClientServiceStrategy(responseStreamObserver);
         } catch (Exception e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
         }
