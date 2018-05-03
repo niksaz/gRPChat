@@ -20,8 +20,9 @@ import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import ru.spbau.mesau.exchange.MesAUClient;
-import ru.spbau.mesau.exchange.MesAUServiceRunner;
+import ru.spbau.mesau.exchange.MesAUServerRunner;
 
+/** GUI for the messaging app. */
 public class GUIRunner {
   private static final Logger logger = Logger.getLogger(GUIRunner.class.getName());
   private static final int PORT_TO_RUN_ON = 50051;
@@ -62,7 +63,7 @@ public class GUIRunner {
       beClientButton.setVisible(false);
       messageField.setEnabled(true);
       new Thread(() -> {
-        MesAUServiceRunner runner = new MesAUServiceRunner(PORT_TO_RUN_ON);
+        MesAUServerRunner runner = new MesAUServerRunner(PORT_TO_RUN_ON);
         serviceStrategy = new ServerServiceStrategy(runner);
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {

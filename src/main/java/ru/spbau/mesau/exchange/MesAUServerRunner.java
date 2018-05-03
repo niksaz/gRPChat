@@ -7,14 +7,15 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import ru.spbau.mesau.Message;
 
-public class MesAUServiceRunner {
-  private static final Logger logger = Logger.getLogger(MesAUServiceRunner.class.getName());
+/** Class that runs the server with the service bound to its port. */
+public class MesAUServerRunner {
+  private static final Logger logger = Logger.getLogger(MesAUServerRunner.class.getName());
 
   private final int port;
   private Server server;
   private MesAUImpl mesAU;
 
-  public MesAUServiceRunner(int port) {
+  public MesAUServerRunner(int port) {
     this.port = port;
   }
 

@@ -9,6 +9,7 @@ import ru.spbau.mesau.MesAUGrpc;
 import ru.spbau.mesau.MesAUGrpc.MesAUStub;
 import ru.spbau.mesau.Message;
 
+/** Class that connects and communicates with the service server. */
 public class MesAUClient {
   private final ManagedChannel channel;
   private final MesAUStub asyncStub;

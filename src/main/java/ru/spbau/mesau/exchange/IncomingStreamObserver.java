@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import ru.spbau.mesau.Message;
 
+/** Class that feeds incoming {@link Message}s to provided {@link Consumer<Message>}. */
 public class IncomingStreamObserver implements StreamObserver<Message> {
   private static final Logger logger = Logger.getLogger(IncomingStreamObserver.class.getName());
 

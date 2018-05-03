@@ -2,6 +2,7 @@ package ru.spbau.mesau;
 
 import io.grpc.stub.StreamObserver;
 
+/** The state of {@link GUIRunner} as a client. */
 public class ClientServiceStrategy extends ServiceStrategy {
   private final StreamObserver<Message> responseStreamObserver;
 

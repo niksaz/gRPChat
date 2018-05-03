@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import ru.spbau.mesau.MesAUGrpc.MesAUImplBase;
 import ru.spbau.mesau.Message;
 
+/** Class that implements service rpcs. */
 public class MesAUImpl extends MesAUImplBase {
   private static final Logger logger = Logger.getLogger(MesAUImpl.class.getName());
 

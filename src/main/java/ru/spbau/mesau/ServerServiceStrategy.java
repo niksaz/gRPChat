@@ -1,11 +1,12 @@
 package ru.spbau.mesau;
 
-import ru.spbau.mesau.exchange.MesAUServiceRunner;
+import ru.spbau.mesau.exchange.MesAUServerRunner;
 
+/** The state of {@link GUIRunner} as a server. */
 public class ServerServiceStrategy extends ServiceStrategy {
-  private final MesAUServiceRunner runner;
+  private final MesAUServerRunner runner;
 
-  public ServerServiceStrategy(MesAUServiceRunner runner) {
+  public ServerServiceStrategy(MesAUServerRunner runner) {
     this.runner = runner;
   }
 
