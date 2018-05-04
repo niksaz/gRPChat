@@ -11,12 +11,6 @@ public class MesAUTest {
   @Test
   public void testInteraction() throws Exception {
     Queue<Message> messagesServerReceived = new ConcurrentLinkedQueue<>();
-    Message serverMessage =
-      Message.newBuilder()
-        .setContent("server-content")
-        .setFromDateTimestamp(0)
-        .setAuthor("server")
-        .build();
     MesAUServerRunner runner = new MesAUServerRunner(50051);
     Thread serverThread = new Thread(() -> {
       try {
@@ -30,7 +24,7 @@ public class MesAUTest {
         runnerThread.setDaemon(true);
         runnerThread.start();
         Thread.sleep(10000);
-        runner.sendMessage(serverMessage);
+        runner.sendMessage(FakeMessages.serverMessage);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -39,17 +33,11 @@ public class MesAUTest {
     Thread.sleep(5000);
 
     Queue<Message> messagesClientReceived = new ConcurrentLinkedQueue<>();
-    Message clientMessage =
-      Message.newBuilder()
-        .setContent("client-content")
-        .setFromDateTimestamp(0)
-        .setAuthor("client")
-        .build();
     MesAUClient client = new MesAUClient("localhost", 50051);
     Thread clientThread = new Thread(() -> {
       try {
         client.initiateChat(messagesClientReceived::add);
-        client.sendMessage(clientMessage);
+        client.sendMessage(FakeMessages.clientMessage);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -64,9 +52,9 @@ public class MesAUTest {
     clientThread.join();
 
     assertEquals(1, messagesClientReceived.size());
-    assertEquals(serverMessage, messagesClientReceived.peek());
+    assertEquals(FakeMessages.serverMessage, messagesClientReceived.peek());
 
     assertEquals(1, messagesClientReceived.size());
-    assertEquals(clientMessage, messagesServerReceived.peek());
+    assertEquals(FakeMessages.clientMessage, messagesServerReceived.peek());
   }
 }

@@ -32,7 +32,8 @@ public class MesAUClient {
     try {
       logger.info("shutting down client's channel");
       channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException ignored) {
+    } catch (InterruptedException e) {
+      logger.info("exception during channel shutdown " + e.getMessage());
     }
   }
 
