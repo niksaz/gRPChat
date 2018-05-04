@@ -125,7 +125,11 @@ public class GUIRunner {
   private static String askForInput(String prompt, Object defaultValue) {
     JFrame dialogFrame = new JFrame();
     String result = JOptionPane.showInputDialog(dialogFrame, prompt);
-    return result != null ? result : defaultValue.toString();
+    if (result == null || result.isEmpty()) {
+      return defaultValue.toString();
+    } else {
+      return result;
+    }
   }
 
   private static Message formMessageFromGUIContext(String content) {
