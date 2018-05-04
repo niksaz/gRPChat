@@ -1,7 +1,6 @@
 package ru.spbau.mesau;
 
 import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
@@ -85,9 +84,8 @@ public class GUIRunner {
           String port = askForInput("Enter the port number of the server:", PORT_TO_RUN_ON);
           MesAUClient client = new MesAUClient(host, Integer.valueOf(port));
           Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
-          StreamObserver<Message> responseStreamObserver =
-            client.initiateChat(message -> addMessageTo(editorPane, message));
-          serviceStrategy = new ClientGUIServiceStrategy(responseStreamObserver);
+          client.initiateChat(message -> addMessageTo(editorPane, message));
+          serviceStrategy = new ClientGUIServiceStrategy(client);
         } catch (Exception e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
         }

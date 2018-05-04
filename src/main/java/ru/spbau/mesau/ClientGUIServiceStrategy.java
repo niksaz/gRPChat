@@ -1,17 +1,17 @@
 package ru.spbau.mesau;
 
-import io.grpc.stub.StreamObserver;
+import ru.spbau.mesau.exchange.MesAUClient;
 
 /** The state of {@link GUIRunner} as a client. */
 public class ClientGUIServiceStrategy extends GUIServiceStrategy {
-  private final StreamObserver<Message> responseStreamObserver;
+  private final MesAUClient client;
 
-  public ClientGUIServiceStrategy(StreamObserver<Message> responseStreamObserver) {
-    this.responseStreamObserver = responseStreamObserver;
+  public ClientGUIServiceStrategy(MesAUClient client) {
+    this.client = client;
   }
 
   @Override
   public void sendMessage(Message message) {
-    responseStreamObserver.onNext(message);
+    client.sendMessage(message);
   }
 }

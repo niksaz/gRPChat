@@ -27,6 +27,7 @@ public class MesAUServerRunner {
 
   public void sendMessage(Message message) {
     if (mesAU != null) {
+      logger.info("sending message: " + message);
       mesAU.sendMessage(message);
     }
   }

@@ -19,7 +19,7 @@ public class IncomingStreamObserver implements StreamObserver<Message> {
 
   @Override
   public void onNext(Message value) {
-    logger.info("INCOMING: " + value);
+    logger.info("incoming message: " + value);
     incomingMessageConsumer.accept(value);
   }
 
