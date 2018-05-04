@@ -10,4 +10,6 @@ service MesAU {
 
 message Message {
   string content = 1;
+  string author = 2;
+  uint64 from_date_timestamp = 3;
 }

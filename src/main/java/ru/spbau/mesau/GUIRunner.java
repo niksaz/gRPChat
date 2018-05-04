@@ -7,12 +7,16 @@ import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -30,14 +34,18 @@ public class GUIRunner {
   private static final int HEIGHT = 480;
 
   private static volatile GUIServiceStrategy serviceStrategy;
+  private static String name;
 
-  private static void addMessageTo(JEditorPane editorPane, String message) {
+  private static void addMessageTo(JEditorPane editorPane, Message message) {
     try {
       Document document = editorPane.getDocument();
-      if (document.getLength() > 0) {
-        message = "\n" + message;
-      }
-      document.insertString(document.getLength(), message, null);
+      Date date = new Date(message.getFromDateTimestamp());
+      DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+      String formattedDate = df.format(date);
+      String formattedMessage =
+        "[" + formattedDate + "] "
+        + message.getAuthor() + ": " + message.getContent() + '\n';
+      document.insertString(document.getLength(), formattedMessage, null);
     } catch (BadLocationException ignored) {
     }
   }
@@ -57,8 +65,8 @@ public class GUIRunner {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
           String text = messageField.getText();
           messageField.setText("");
-          addMessageTo(editorPane, "YOU: " + text);
-          Message message = Message.newBuilder().setContent(text).build();
+          Message message = formMessageFromGUIContext(text);
+          addMessageTo(editorPane, message);
           serviceStrategy.sendMessage(message);
         }
       }
@@ -73,7 +81,7 @@ public class GUIRunner {
         serviceStrategy = new ServerGUIServiceStrategy(runner);
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {
-          runner.run(message -> addMessageTo(editorPane, message.getContent()));
+          runner.run(message -> addMessageTo(editorPane, message));
         } catch (IOException | InterruptedException e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
         }
@@ -89,7 +97,7 @@ public class GUIRunner {
           MesAUClient client = new MesAUClient("localhost", PORT_TO_RUN_ON);
           Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
           StreamObserver<Message> responseStreamObserver =
-            client.initiateChat(message -> addMessageTo(editorPane, message.getContent()));
+            client.initiateChat(message -> addMessageTo(editorPane, message));
           serviceStrategy = new ClientGUIServiceStrategy(responseStreamObserver);
         } catch (Exception e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
@@ -108,6 +116,14 @@ public class GUIRunner {
     pane.add(editorPane);
   }
 
+  private static Message formMessageFromGUIContext(String content) {
+    return Message.newBuilder()
+      .setContent(content)
+      .setAuthor(name)
+      .setFromDateTimestamp(System.currentTimeMillis())
+      .build();
+  }
+
   private static void createAndShowGui() {
     JFrame frame = new JFrame();
     frame.setSize(WIDTH, HEIGHT);
@@ -118,9 +134,16 @@ public class GUIRunner {
     fillFramePane(pane);
 
     frame.setVisible(true);
+
+    JFrame dialogFrame = new JFrame("InputDialog Example #1");
+    name = JOptionPane.showInputDialog(dialogFrame, "What is your Name?");
+    if (name == null) {
+      name = System.getProperty("user.name");
+    }
   }
 
   public static void main(String[] args) {
+    System.out.println("Timestamp: " + System.currentTimeMillis());
     SwingUtilities.invokeLater(GUIRunner::createAndShowGui);
   }
 }
