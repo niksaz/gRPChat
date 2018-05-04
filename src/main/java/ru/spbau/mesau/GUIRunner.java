@@ -56,28 +56,15 @@ public class GUIRunner {
     JEditorPane editorPane = new JEditorPane();
     editorPane.setEnabled(false);
 
-    JTextField messageField = new JTextField();
-    messageField.setEnabled(false);
-    messageField.setMaximumSize(new Dimension(WIDTH, messageField.getPreferredSize().height));
-    messageField.addKeyListener(new KeyAdapter() {
-      @Override
-      public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-          String text = messageField.getText();
-          messageField.setText("");
-          Message message = formMessageFromGUIContext(text);
-          addMessageTo(editorPane, message);
-          serviceStrategy.sendMessage(message);
-        }
-      }
-    });
+    JTextField messageField = createMessageSendingField(editorPane);
 
     beServerButton.addActionListener(action -> {
       beServerButton.setEnabled(false);
       beClientButton.setVisible(false);
       messageField.setEnabled(true);
       new Thread(() -> {
-        MesAUServerRunner runner = new MesAUServerRunner(PORT_TO_RUN_ON);
+        String portToRunOn = askForInput("Enter the port number for the server:", PORT_TO_RUN_ON);
+        MesAUServerRunner runner = new MesAUServerRunner(Integer.valueOf(portToRunOn));
         serviceStrategy = new ServerGUIServiceStrategy(runner);
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {
@@ -94,7 +81,9 @@ public class GUIRunner {
       messageField.setEnabled(true);
       new Thread(() -> {
         try {
-          MesAUClient client = new MesAUClient("localhost", PORT_TO_RUN_ON);
+          String host = askForInput("Enter the hostname of the server:", "localhost");
+          String port = askForInput("Enter the port number of the server:", PORT_TO_RUN_ON);
+          MesAUClient client = new MesAUClient(host, Integer.valueOf(port));
           Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
           StreamObserver<Message> responseStreamObserver =
             client.initiateChat(message -> addMessageTo(editorPane, message));
@@ -116,6 +105,31 @@ public class GUIRunner {
     pane.add(editorPane);
   }
 
+  private static JTextField createMessageSendingField(JEditorPane editorPane) {
+    JTextField messageField = new JTextField();
+    messageField.setEnabled(false);
+    messageField.setMaximumSize(new Dimension(WIDTH, messageField.getPreferredSize().height));
+    messageField.addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER && !messageField.getText().isEmpty()) {
+          String text = messageField.getText();
+          messageField.setText("");
+          Message message = formMessageFromGUIContext(text);
+          addMessageTo(editorPane, message);
+          serviceStrategy.sendMessage(message);
+        }
+      }
+    });
+    return messageField;
+  }
+
+  private static String askForInput(String prompt, Object defaultValue) {
+    JFrame dialogFrame = new JFrame();
+    String result = JOptionPane.showInputDialog(dialogFrame, prompt);
+    return result != null ? result : defaultValue.toString();
+  }
+
   private static Message formMessageFromGUIContext(String content) {
     return Message.newBuilder()
       .setContent(content)
@@ -135,15 +149,10 @@ public class GUIRunner {
 
     frame.setVisible(true);
 
-    JFrame dialogFrame = new JFrame("InputDialog Example #1");
-    name = JOptionPane.showInputDialog(dialogFrame, "What is your Name?");
-    if (name == null) {
-      name = System.getProperty("user.name");
-    }
+    name = askForInput("What is your Name?", System.getProperty("user.name"));
   }
 
   public static void main(String[] args) {
-    System.out.println("Timestamp: " + System.currentTimeMillis());
     SwingUtilities.invokeLater(GUIRunner::createAndShowGui);
   }
 }
