@@ -19,10 +19,13 @@ public class MesAUServerRunner {
     this.port = port;
   }
 
-  public void run(Consumer<Message> messageConsumer) throws IOException, InterruptedException {
+  public void run(Consumer<Message> messageConsumer) throws IOException {
+    run(messageConsumer, ServerBuilder.forPort(port));
+  }
+
+  void run(Consumer<Message> messageConsumer, ServerBuilder<?> serverBuilder) throws IOException {
     mesAU = new MesAUImpl(messageConsumer);
-    server = ServerBuilder.forPort(port).addService(mesAU).build().start();
-    server.awaitTermination();
+    server = serverBuilder.addService(mesAU).build().start();
   }
 
   public void sendMessage(Message message) {

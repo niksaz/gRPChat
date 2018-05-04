@@ -2,27 +2,19 @@ package ru.spbau.mesau.exchange;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import ru.spbau.mesau.Message;
 
 public class MesAUTest {
   @Test
   public void testInteraction() throws Exception {
-    Queue<Message> messagesServerReceived = new ConcurrentLinkedQueue<>();
+    List<Message> messagesServerReceived = new ArrayList<>();
     MesAUServerRunner runner = new MesAUServerRunner(50051);
     Thread serverThread = new Thread(() -> {
       try {
-        Thread runnerThread = new Thread(() -> {
-          try {
-            runner.run(messagesServerReceived::add);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        });
-        runnerThread.setDaemon(true);
-        runnerThread.start();
+        runner.run(messagesServerReceived::add);
         Thread.sleep(10000);
         runner.sendMessage(FakeMessages.serverMessage);
       } catch (Exception e) {
@@ -32,7 +24,7 @@ public class MesAUTest {
     serverThread.start();
     Thread.sleep(5000);
 
-    Queue<Message> messagesClientReceived = new ConcurrentLinkedQueue<>();
+    List<Message> messagesClientReceived = new ArrayList<>();
     MesAUClient client = new MesAUClient("localhost", 50051);
     Thread clientThread = new Thread(() -> {
       try {
@@ -52,9 +44,9 @@ public class MesAUTest {
     clientThread.join();
 
     assertEquals(1, messagesClientReceived.size());
-    assertEquals(FakeMessages.serverMessage, messagesClientReceived.peek());
+    assertEquals(FakeMessages.serverMessage, messagesClientReceived.get(0));
 
     assertEquals(1, messagesClientReceived.size());
-    assertEquals(FakeMessages.clientMessage, messagesServerReceived.peek());
+    assertEquals(FakeMessages.clientMessage, messagesServerReceived.get(0));
   }
 }

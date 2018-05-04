@@ -68,7 +68,7 @@ public class GUIRunner {
         Runtime.getRuntime().addShutdownHook(new Thread(runner::stop));
         try {
           runner.run(message -> addMessageTo(editorPane, message));
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
           logger.log(Level.WARNING, "Server failed", Status.fromThrowable(e));
         }
       }).start();
