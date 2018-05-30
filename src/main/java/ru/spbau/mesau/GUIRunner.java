@@ -17,7 +17,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
@@ -29,8 +31,7 @@ import ru.spbau.mesau.exchange.MesAUServerRunner;
 public class GUIRunner {
   private static final Logger logger = Logger.getLogger(GUIRunner.class.getName());
   private static final int PORT_TO_RUN_ON = 50051;
-  private static final int WIDTH = 480;
-  private static final int HEIGHT = 480;
+  private static final Dimension FRAME_DIMENSION = new Dimension(480, 480);
 
   private static volatile GUIServiceStrategy serviceStrategy;
   private static String name;
@@ -53,7 +54,7 @@ public class GUIRunner {
     JButton beServerButton = new JButton("Become server");
     JButton beClientButton = new JButton("Connect to someone");
     JEditorPane editorPane = new JEditorPane();
-    editorPane.setEnabled(false);
+    editorPane.setEditable(false);
 
     JTextField messageField = createMessageSendingField(editorPane);
 
@@ -100,13 +101,15 @@ public class GUIRunner {
     pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
     pane.add(panel);
     pane.add(messageField);
-    pane.add(editorPane);
+    JScrollPane scrollPane = new JScrollPane(editorPane);
+    scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    pane.add(scrollPane);
   }
 
   private static JTextField createMessageSendingField(JEditorPane editorPane) {
     JTextField messageField = new JTextField();
     messageField.setEnabled(false);
-    messageField.setMaximumSize(new Dimension(WIDTH, messageField.getPreferredSize().height));
+    messageField.setMaximumSize(new Dimension(Integer.MAX_VALUE, messageField.getPreferredSize().height));
     messageField.addKeyListener(new KeyAdapter() {
       @Override
       public void keyReleased(KeyEvent e) {
@@ -141,8 +144,8 @@ public class GUIRunner {
   }
 
   private static void createAndShowGui() {
-    JFrame frame = new JFrame();
-    frame.setSize(WIDTH, HEIGHT);
+    JFrame frame = new JFrame("MesAU");
+    frame.setMinimumSize(FRAME_DIMENSION);
 
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 

@@ -6,8 +6,6 @@ Authors: Mikita Sazanovich, Daniil Smirnov, Egor Bogomolov.
 
 ## Running
 
-To run the app with gradle you need to have [Google protobuf compiler](https://github.com/google/protobuf/releases).
-
 First, assemble the jar file:
 ```
 ./gradlew jar
