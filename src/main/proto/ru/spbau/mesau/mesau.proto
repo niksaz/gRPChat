@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package ru.spbau.mesau;
+
+service MesAU {
+  rpc chat(stream Message) returns (stream Message) {}
+}
+
+message Message {
+  string content = 1;
+  string author = 2;
+  uint64 from_date_timestamp = 3;
+}
